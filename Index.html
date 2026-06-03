@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBG (Manage Budget Gue)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <?!= include('Style'); ?>
+</head>
+<body class="theme-violet" id="app-body">
+
+<div class="app">
+  <div id="toast-box" class="toast toast-success"><span id="toast-icon" class="material-symbols-outlined">check_circle</span><span id="toast-msg">Notif</span></div>
+
+  <div id="page-auth" class="main-content">
+    <div class="auth-wrapper">
+      <div class="card" style="width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+         <span class="material-symbols-outlined" style="font-size: 60px; color: var(--primary); margin-bottom: 10px;">account_balance_wallet</span>
+         <h2 style="color: var(--text-main); font-weight: 800;">MBG</h2>
+         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Manage Budget Gue</p>
+         
+         <div id="login-form">
+           <input type="text" id="log-email" placeholder="Email">
+           <input type="password" id="log-pass" placeholder="Password">
+           <button class="btn-save" onclick="doLogin()">Masuk Akun</button>
+           <p style="margin-top:15px; font-size:0.85rem; cursor:pointer; color:var(--primary); font-weight: 600;" onclick="toggleAuth()">Belum punya akun? Daftar</p>
+         </div>
+
+         <div id="reg-form" style="display:none;">
+           <input type="text" id="reg-name" placeholder="Nama Lengkap">
+           <input type="email" id="reg-email" placeholder="Alamat Email">
+           <input type="text" id="reg-hp" placeholder="No HP Aktif">
+           <input type="text" id="reg-ref" placeholder="Kode Referral (Opsional)">
+           <input type="password" id="reg-pass" placeholder="Buat Password">
+           <button class="btn-save" onclick="doRegister()">Daftar</button>
+           <p style="margin-top:15px; font-size:0.85rem; cursor:pointer; color:var(--primary); font-weight: 600;" onclick="toggleAuth()">Sudah punya akun? Login</p>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-admin" class="main-content">
+    <div class="header-app">
+      <div class="brand"><span class="material-symbols-outlined" style="color:var(--red);">admin_panel_settings</span> Admin MBG</div>
+      <button onclick="doLogout()" style="border:none; background:none; color:var(--red); font-weight:bold; cursor:pointer;">Logout</button>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">Daftar Pengguna</h3>
+      <button class="btn-save" style="padding:10px; font-size:0.85rem; margin-bottom:15px;" onclick="refreshAdmin()">Refresh Data</button>
+      <div id="admin-user-list"></div>
+    </div>
+  </div>
+
+  <div id="page-home" class="main-content">
+    <div class="header-app">
+      <div class="brand"><span class="material-symbols-outlined">account_balance_wallet</span> MBG</div>
+      <button onclick="refreshData()" style="border:none; background:none; color:var(--primary); cursor:pointer;"><span id="refresh-icon" class="material-symbols-outlined">refresh</span></button>
+    </div>
+    <div class="card hero">
+      <p>Total Saldo Dompet</p>
+      <h2 id="h-total-saldo">Rp 0</h2>
+      <div class="hero-subfields">
+        <span id="h-total-assets">Aset / Tabungan: Rp 0</span>
+        <span id="h-total-hutang" style="font-weight: 500;">Hutang: Rp 0</span>
+        <span id="h-total-kekayaan" style="font-weight: 700; color: #fff; border-top: 1px dashed rgba(255,255,255,0.4); padding-top: 8px; margin-top: 4px;">Total Kekayaan: Rp 0</span>
+      </div>
+    </div>
+    <div class="card" style="padding: 16px 20px;">
+      <h3 style="font-size:1rem; margin-bottom:12px;">Rekapitulasi</h3>
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px; font-weight:600; color:var(--text-muted);"><span style="width:33%;">Periode</span><span style="width:33%; text-align:right;">Pemasukan</span><span style="width:33%; text-align:right;">Pengeluaran</span></div>
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; margin-bottom:8px;"><span style="width:33%;">Hari Ini</span><span style="width:33%; text-align:right;" class="income" id="rk-h-i">0</span><span style="width:33%; text-align:right;" class="expense" id="rk-h-o">0</span></div>
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; margin-bottom:8px;"><span style="width:33%;">7 Hari</span><span style="width:33%; text-align:right;" class="income" id="rk-w-i">0</span><span style="width:33%; text-align:right;" class="expense" id="rk-w-o">0</span></div>
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;"><span style="width:33%;">1 Bulan</span><span style="width:33%; text-align:right;" class="income" id="rk-m-i">0</span><span style="width:33%; text-align:right;" class="expense" id="rk-m-o">0</span></div>
+    </div>
+    <h3><span class="material-symbols-outlined text-red">trending_up</span> 3 Pengeluaran Terbesar</h3><div class="card" id="top-3-container"></div>
+    <h3><span class="material-symbols-outlined">history</span> Histori Transaksi</h3><div class="card" id="history-container"></div>
+  </div>
+
+  <div id="page-dompet" class="main-content">
+    <div class="header-app">
+      <h3><span class="material-symbols-outlined">payments</span> Dompet</h3>
+      <div style="display:flex; gap:8px;">
+        <button onclick="openCrudModal('Dompet', 'add')" class="btn-save" style="padding: 8px 14px; font-size:0.85rem; width:auto; border-radius:10px;">+ Tambah</button>
+        <button onclick="openTransferModal()" class="btn-save btn-outline" style="padding: 8px 14px; font-size:0.85rem; width:auto; border-radius:10px;">Transfer</button>
+      </div>
+    </div>
+    <div id="wallets-container"></div>
+  </div>
+
+  <div id="page-manage" class="main-content">
+    <h3><span class="material-symbols-outlined">dataset</span> Manage Keuangan</h3>
+    <div class="tabs">
+      <button class="tab-link active" onclick="openTab(event, 'tab-m-aset')">Aset</button>
+      <button class="tab-link" onclick="openTab(event, 'tab-m-tagihan')">Tagihan</button>
+      <button class="tab-link" onclick="openTab(event, 'tab-m-hutang')">Hutang</button>
+    </div>
+    <div id="tab-m-aset" class="tab-content active"><button onclick="openCrudModal('Assets', 'add')" class="btn-save btn-outline" style="margin-bottom:14px; padding:12px;">+ Buat Aset/Tabungan Baru</button><div id="assets-container"></div></div>
+    <div id="tab-m-tagihan" class="tab-content"><button onclick="openInputModal('Tagihan')" class="btn-save btn-outline" style="margin-bottom:14px; padding:12px;">+ Tambah Tagihan Baru</button><div id="tagihan-container"></div></div>
+    <div id="tab-m-hutang" class="tab-content"><button onclick="openInputModal('Hutang')" class="btn-save btn-outline" style="margin-bottom:14px; padding:12px;">+ Tambah Catatan Hutang</button><div id="hutang-container"></div></div>
+  </div>
+
+  <div id="page-catat" class="main-content">
+    <h3><span class="material-symbols-outlined">edit_note</span> Catat Keuangan</h3>
+    <div class="tabs"><button class="tab-link active" onclick="openTab(event, 'tab-msk')">Pemasukan</button><button class="tab-link" onclick="openTab(event, 'tab-kel')">Pengeluaran</button></div>
+
+    <div id="tab-msk" class="tab-content active">
+      <input type="date" id="msk-tgl"><input type="text" id="msk-asal" placeholder="Sumber Pemasukan"><input type="number" id="msk-nom" placeholder="Nominal Rp"><select id="msk-dompet"><option value="">Pilih Dompet...</option></select>
+      <button class="btn-save" onclick="save('Pemasukan')">Simpan Pemasukan</button>
+    </div>
+
+    <div id="tab-kel" class="tab-content">
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding: 12px; background: var(--primary-light); border-radius: 12px; border: 1px dashed var(--primary);">
+        <div style="font-size:0.8rem; color:var(--primary); font-weight:700; display:flex; align-items:center; gap:6px;">
+          <span class="material-symbols-outlined" style="font-size:20px;">receipt_long</span> OCR Struk Belanja
+        </div>
+        <button class="btn-save" style="padding:8px 12px; width:auto; border-radius:8px; display:flex; align-items:center; gap:4px; font-size:0.8rem;" onclick="document.getElementById('receipt-upload').click()">
+          <span class="material-symbols-outlined" style="font-size:16px;">photo_camera</span> Scan
+        </button>
+        <input type="file" id="receipt-upload" accept="image/*" style="display:none;" onchange="processReceiptScan(this)">
+      </div>
+
+      <input type="date" id="kel-tgl"><input type="text" id="kel-nama" placeholder="Kebutuhan / Barang">
+      <div id="cat-select-wrap" style="display:flex; gap:8px; margin-bottom:14px;"><select id="kel-kat" style="margin-bottom:0; flex:1;"></select><button onclick="openCategoryManager()" style="background:#e2e8f0; border:none; border-radius:12px; width:48px; cursor:pointer; display:flex; align-items:center; justify-content:center;"><span class="material-symbols-outlined">edit_square</span></button></div>
+      <div id="cat-manager-box" style="display:none; background:#f1f5f9; padding:16px; border-radius:12px; margin-bottom:14px; border:1px solid #cbd5e1;"><h4 style="font-size:0.85rem; margin-bottom:8px;">Kelola Kategori</h4><div style="display:flex; gap:6px; margin-bottom:10px;"><input type="text" id="new-cat-name" placeholder="Kategori baru..." style="margin-bottom:0; padding:10px; font-size:0.85rem; flex:1;"><button id="btn-cat-save" onclick="addOrUpdateCategory()" style="background:var(--primary); color:#fff; border:none; border-radius:8px; padding:0 12px; font-weight:bold;">+</button></div><div id="cat-list-items" style="max-height:120px; overflow-y:auto; font-size:0.85rem; margin-bottom:10px;"></div><button onclick="closeCategoryManager()" class="btn-save" style="padding:10px; font-size:0.8rem; border-radius:8px;">Selesai</button></div>
+      <input type="number" id="kel-nom" placeholder="Nominal Rp"><select id="kel-dompet"><option value="">Potong Dari Dompet...</option></select><textarea id="kel-ket" placeholder="Keterangan / Hasil OCR..."></textarea>
+      <button class="btn-save" onclick="save('Pengeluaran')">Simpan Pengeluaran</button>
+    </div>
+  </div>
+
+  <div id="page-set" class="main-content">
+    <h3><span class="material-symbols-outlined">settings</span> Setelan Akun</h3>
+    <div class="card" style="text-align: center;">
+      <div style="width:60px; height:60px; background:var(--primary-light); color:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 10px; font-size:24px; font-weight:bold;" id="prof-initial">A</div>
+      <input type="text" id="set-name" placeholder="Nama Anda" style="text-align:center; font-weight:bold;">
+      <input type="email" id="set-email" placeholder="Email Anda" style="text-align:center;">
+      <input type="password" id="set-pass" placeholder="Password Baru (Opsional)" style="text-align:center;">
+      <button class="btn-save" style="padding:10px; font-size:0.85rem; margin-bottom:10px;" onclick="updateProfile()">Update Profil</button>
+      <button class="btn-save btn-outline" style="padding:10px; font-size:0.85rem; margin-bottom:10px;" onclick="downloadBackup()">📥 Backup Database</button>
+      <button class="btn-save btn-delete" style="padding:10px; font-size:0.85rem;" onclick="doLogout()">Logout / Keluar</button>
+    </div>
+    <div class="card">
+      <p style="font-size:0.85rem; margin-bottom:10px; font-weight:600;">Tema Pastel Elegan:</p>
+      <div class="theme-grid">
+        <div class="theme-box" id="th-violet" onclick="changeTheme('violet')">Violet</div>
+        <div class="theme-box" id="th-sage" onclick="changeTheme('sage')">Sage</div>
+        <div class="theme-box" id="th-rose" onclick="changeTheme('rose')">Rose</div>
+        <div class="theme-box" id="th-ocean" onclick="changeTheme('ocean')">Ocean</div>
+        <div class="theme-box" id="th-terracotta" onclick="changeTheme('terracotta')">Terra</div>
+        <div class="theme-box" id="th-latte" onclick="changeTheme('latte')">Latte</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="app-nav" style="display:none;">
+    <button class="nav-item active" onclick="showPage('home')"><span class="material-symbols-outlined">home</span>Home</button>
+    <button class="nav-item" onclick="showPage('dompet')"><span class="material-symbols-outlined">account_balance_wallet</span>Dompet</button>
+    <button class="nav-item" onclick="showPage('catat')"><div class="fab-container"><div class="fab-btn"><span class="material-symbols-outlined">add</span></div></div>Catat</button>
+    <button class="nav-item" onclick="showPage('manage')"><span class="material-symbols-outlined">checklist</span>Manage</button>
+    <button class="nav-item" onclick="showPage('set')"><span class="material-symbols-outlined">settings</span>Setelan</button>
+  </nav>
+</div>
+
+<div id="crud-modal" class="modal" onclick="closeModal('crud-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header"><h3 id="modal-title">Tambah</h3><button onclick="closeModal('crud-modal')" style="border:none; background:none; cursor:pointer;"><span class="material-symbols-outlined">close</span></button></div>
+    <input type="hidden" id="m-target-sheet"> <input type="hidden" id="m-orig-name">
+    <input type="text" id="m-name" placeholder="Nama"><input type="number" id="m-balance" placeholder="Nominal Rp">
+    <div id="dompet-extra-fields" style="display:none; width: 100%;">
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">KATEGORI DOMPET</p>
+      <select id="m-kategori" onchange="toggleRekForm()" style="margin-bottom:14px;"><option value="Cash">Cash</option><option value="E-Wallet">E-Wallet</option><option value="Rekening">Rekening Bank</option></select>
+      <input type="text" id="m-rek" placeholder="No Rekening / ID E-Wallet (Opsional)" style="display:none;">
+    </div>
+    <button class="btn-save" onclick="submitCrudAction()">Simpan</button><button class="btn-save btn-delete" id="btn-crud-delete" onclick="deleteMasterItem()">Hapus</button>
+  </div>
+</div>
+
+<div id="transfer-modal" class="modal" onclick="closeModal('transfer-modal')"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3 id="transfer-title">Transfer Internal</h3><button onclick="closeModal('transfer-modal')" style="border:none; background:none; cursor:pointer;"><span class="material-symbols-outlined">close</span></button></div><select id="tf-from"><option value="">Dari Dompet...</option></select><div style="display:flex; justify-content:center; margin-bottom:14px;"><span class="material-symbols-outlined" style="color:var(--primary); background:var(--primary-light); padding:8px; border-radius:50%;">arrow_downward</span></div><select id="tf-to"><option value="">Ke Dompet...</option></select><input type="number" id="tf-nom" placeholder="Nominal Transfer Rp"><button class="btn-save" onclick="submitTransfer()">Transfer Sekarang</button></div></div>
+<div id="input-modal" class="modal" onclick="closeModal('input-modal')"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3 id="inp-title">Tambah Baru</h3><button onclick="closeModal('input-modal')" style="border:none; background:none; cursor:pointer;"><span class="material-symbols-outlined">close</span></button></div><input type="hidden" id="inp-type"><input type="date" id="inp-tgl"><input type="text" id="inp-nama" placeholder="Nama / Untuk Apa?"><input type="text" id="inp-tempat" placeholder="Instansi / Kepada Siapa?"><input type="number" id="inp-nom" placeholder="Nominal Keseluruhan Rp"><textarea id="inp-ket" placeholder="Keterangan tambahan..."></textarea><button class="btn-save" onclick="submitInputData()">Simpan Data</button></div></div>
+<div id="pay-modal" class="modal" onclick="closeModal('pay-modal')"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3 id="pay-title">Proses Pembayaran</h3><button onclick="closeModal('pay-modal')" style="border:none; background:none; cursor:pointer;"><span class="material-symbols-outlined">close</span></button></div><input type="hidden" id="pay-type"><input type="hidden" id="pay-row"><p style="font-size:0.85rem; margin-bottom:8px; font-weight:600;" id="pay-info-sisa"></p><input type="number" id="pay-amount" placeholder="Nominal Bayar Rp"><select id="pay-dompet"><option value="">Potong dari Dompet...</option></select><button class="btn-save" onclick="submitPayment()">Bayar Sekarang</button></div></div>
+
+<div id="admin-edit-modal" class="modal" onclick="closeModal('admin-edit-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-header"><h3>Edit Akun Pengguna</h3><button onclick="closeModal('admin-edit-modal')" style="border:none; background:none; cursor:pointer;"><span class="material-symbols-outlined">close</span></button></div>
+    <input type="hidden" id="ad-row">
+    <input type="text" id="ad-nama" placeholder="Nama">
+    <input type="email" id="ad-email" placeholder="Email">
+    <input type="text" id="ad-hp" placeholder="No HP">
+    <input type="text" id="ad-ref" placeholder="Kode Ref">
+    <input type="text" id="ad-pass" placeholder="Password">
+    <button class="btn-save" onclick="adminSubmitEdit()">Simpan Perubahan</button>
+  </div>
+</div>
+
+<?!= include('JavaScript'); ?>
+</body>
+</html>
